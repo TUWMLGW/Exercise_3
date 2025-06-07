@@ -35,17 +35,61 @@ class GameState:
         self.ball_x_grid += self.ball_dx_grid
         self.ball_y_grid += self.ball_dy_grid
 
-        # Simple "bounce" logic for ball within grid boundaries
-        if self.ball_x_grid + config.BALL_SIZE_GRID > config.GRID_WIDTH or self.ball_x_grid < 0:
+        # Bouncing off walls
+        if self.ball_x_grid < 0 or self.ball_x_grid + config.BALL_SIZE_GRID > config.GRID_WIDTH:
             self.ball_dx_grid *= -1
-        # If ball hits top of screen OR goes past paddle (bottom)
-        if self.ball_y_grid < 0 or self.ball_y_grid + config.BALL_SIZE_GRID > config.GRID_HEIGHT:
+        
+        # Collision with top border
+        if self.ball_y_grid < 0:
             self.ball_dy_grid *= -1
-            # Implement the PDF rule: if ball goes past paddle, all blocks reappear,
-            # paddle center, speed 0, ball random direction 
-            if self.ball_y_grid + config.BALL_SIZE_GRID > config.GRID_HEIGHT:
-                self._reset_game_after_miss() # Implement this function
-        # (You'll add detailed collision with paddle and bricks here)
+
+        # Collision with paddle
+        paddle_top = (config.GRID_HEIGHT - config.PADDLE_HEIGHT_GRID)
+        if (
+            self.ball_y_grid + config.BALL_SIZE_GRID >= paddle_top and
+            self.ball_x_grid + config.BALL_SIZE_GRID >= self.paddle_x_grid and
+            self.ball_x_grid <= self.paddle_x_grid + config.PADDLE_WIDTH_GRID
+        ):
+            self.ball_dy_grid *= -1
+        
+        # Ball misses paddle
+        if self.ball_y_grid + config.BALL_SIZE_GRID > config.GRID_HEIGHT:
+            self._reset_game_after_miss()
+            return
+
+        # Ball collision with bricks
+        for brick in self.bricks:
+            if brick['was_hit']:
+                continue
+            bx, by = brick['x_grid'], brick['y_grid']
+            bw, bh = brick['width_grid'], brick['height_grid']
+
+            ball_left = self.ball_x_grid
+            ball_right = self.ball_x_grid + config.BALL_SIZE_GRID
+            ball_top = self.ball_y_grid
+            ball_bottom = self.ball_y_grid + config.BALL_SIZE_GRID
+
+            brick_left = bx
+            brick_right = bx + bw
+            brick_top = by
+            brick_bottom = by + bh
+
+            if (
+                ball_right > brick_left and
+                ball_left < brick_right and
+                ball_bottom > brick_top and
+                ball_top < brick_bottom
+            ):
+                brick['was_hit'] = True
+
+                # Determine collision direction
+                if (ball_left < brick_right and ball_right > brick_left):
+                    # Horizontal collision
+                    self.ball_dx_grid *= -1
+                else:
+                    # Vertical collision
+                    self.ball_dy_grid *= -1
+                break
 
     def _reset_game_after_miss(self):
         """Resets game state if ball misses the paddle (as per PDF)."""
