@@ -30,7 +30,7 @@ Follow these steps to set up and run the project locally. 🙌
 
 1.  **Clone the Repository:**
     ```bash
-    git clone [https://github.com/TUWMLGW/Exercise_3.git](https://github.com/TUWMLGW/Exercise_3.git)
+    git clone https://github.com/TUWMLGW/Exercise_3.git
     cd Exercise_3
     ```
 
