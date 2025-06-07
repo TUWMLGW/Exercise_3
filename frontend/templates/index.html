@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atari Breakout Using RL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #333;
+            margin: 0;
+            font-family: sans-serif;
+            color: white;
+        }
+        canvas {
+            border: 2px solid #555;
+            background-color: black;
+        }
+        .info {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>ATARI BREAKOUT</h1>
+    <h2>with reinforcement learning agent</h2>
+    <canvas id="gameCanvas"></canvas>
+    <div class="info">
+        <p>Check out the code on <a href="https://github.com/TUWMLGW/Exercise_3">GitHub</a></p>
+    </div>
+    <script src="{{ url_for('static', filename='game.js') }}"></script>
+</body>
+</html>
