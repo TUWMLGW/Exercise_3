@@ -29,17 +29,14 @@ BRICK_WIDTH_PIXELS = BRICK_WIDTH_GRID * GRID_UNIT_SIZE
 BRICK_HEIGHT_PIXELS = BRICK_HEIGHT_GRID * GRID_UNIT_SIZE
 
 # --- Movement Speeds (in GRID UNITS per step) ---
-# Ball has constant speed of 1 in vertical direction and between -2 and 2 in horizontal direction
+# Ball speed varies by player mode
 BALL_INITIAL_DX_GRID = 1
-BALL_INITIAL_DY_GRID = 1 
+BALL_INITIAL_DY_GRID = 1
+BALL_SPEED_HUMAN_PLAYER = 0.1 
+BALL_SPEED_AI_AGENT = 1 
 
 # Paddle speed changes by +1, -1, or 0 grid units per step
-PADDLE_MAX_SPEED_GRID = 2
 PADDLE_INITIAL_DX_GRID = 0
-
-# Initial speed for the *demo visualization brick*
-# This is a separate moving element just for the initial demo, not a game brick.
-BRICK_INITIAL_DX_GRID = 3
 
 # --- Reinforcement Learning Hyperparameters ---
 EPSILON = 0.1  # For epsilon-greedy policy

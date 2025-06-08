@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, jsonify # type: ignore
+from flask import Flask, render_template, jsonify, request # type: ignore
 from flask_cors import CORS # type: ignore
 
 from backend import config
@@ -25,19 +25,32 @@ rl_agent = MLAgent()
 @app.route('/')
 def index():
     """
-    Serves the main HTML page for the Breakout GUI.
+    Renders the HTML page.
     """
     return render_template('index.html')
 
-@app.route('/game_state')
+@app.route('/game_state', methods=['GET', 'POST'])
 def get_game_state():
     """
-    API endpoint to provide the current game state to the frontend.
+    Provides current game state to the frontend and identifies game mode.
     This endpoint will be called repeatedly by the JavaScript to update the visualization.
     """
-    current_game_state.update()
-
-    return jsonify(current_game_state.get_state_for_display())
+    if request.method == 'POST':
+        data = request.get_json()
+        mode = data.get('mode', 'Human Player')
+        current_game_state.mode = mode
+        # AI Agent Mode
+        if mode == 'AI Agent':
+            action = rl_agent.choose_action(current_game_state)
+            current_game_state.apply_action(action)
+        # Human Player Mode
+        else:
+            action = data.get('action', 0)
+            current_game_state.apply_action(action)
+        current_game_state.update()
+        return jsonify(current_game_state.get_state_for_display())
+    else:
+        return jsonify(current_game_state.get_state_for_display())
 
 if __name__ == '__main__':
     print("Starting Flask development server...")

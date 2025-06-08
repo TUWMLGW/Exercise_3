@@ -1,6 +1,7 @@
 from backend.game_logic.game import GameState
 from backend import config
 from backend.reinforcement_learning.setup import discretize_state, choose_action_epsilon_greedy
+import random
 
 class MLAgent:
     """Implements the Monte Carlo Control algorithm."""
@@ -28,17 +29,17 @@ class MLAgent:
         # Calculate returns and update Q-table (Monte Carlo specific logic)
         # ... your Monte Carlo updates here ...
 
-    def get_action(self, current_game_state_object):
+    def choose_action(self, game_state):
         """
-        Given a current game state, returns the action the agent would take
-        (for demonstration/visualization after training).
+        Picks an optimal action based on the provided game state (breaks ties randomly).
         """
-        discrete_state = discretize_state(current_game_state_object)
+        return 1
+        discrete_state = discretize_state(game_state)
         # Choose greedy action (epsilon=0 for exploitation)
         # You'll need a non-exploratory version of choose_action_epsilon_greedy, or set epsilon=0
         q_values = {action: self.q_table.get((discrete_state, action), 0.0) for action in self.possible_actions}
-        if not q_values: # If state not seen, pick random or default
+        if not q_values: # Pick randomly
              return random.choice(self.possible_actions)
         max_q = max(q_values.values())
         best_actions = [action for action, q in q_values.items() if q == max_q]
-        return random.choice(best_actions) # Break ties randomly
+        return random.choice(best_actions)

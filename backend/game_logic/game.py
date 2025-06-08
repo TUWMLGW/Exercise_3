@@ -3,13 +3,17 @@ from backend import config
 
 class GameState:
     def __init__(self):
+        # Game mode
+        self.mode = 'Human Player'  # Alternatively 'AI Agent'
+
         # Initialize positions in GRID UNITS
         self.ball_x_grid = config.GRID_WIDTH // 2
         self.ball_y_grid = config.GRID_HEIGHT // 2
+
         # Ball initial direction is chosen at random from specified choices
         initial_dx_choices = [-2, -1, 0, 1, 2] 
         self.ball_dx_grid = random.choice(initial_dx_choices)
-        self.ball_dy_grid = config.BALL_INITIAL_DY_GRID # Constant speed of 1 in vertical 
+        self.ball_dy_grid = config.BALL_INITIAL_DY_GRID
 
         # Paddle
         self.paddle_x_grid = (config.GRID_WIDTH // 2) - (config.PADDLE_WIDTH_GRID // 2)
@@ -31,9 +35,15 @@ class GameState:
         
     def update(self):
         """Updates the game state for one timestep, using GRID UNITS."""
+        # Identify ball movement speed based on mode
+        if self.mode == 'AI Agent':
+            speed = config.BALL_SPEED_AI_AGENT
+        else:
+            speed = config.BALL_SPEED_HUMAN_PLAYER
+
         # Update Ball Position
-        self.ball_x_grid += self.ball_dx_grid
-        self.ball_y_grid += self.ball_dy_grid
+        self.ball_x_grid += self.ball_dx_grid * speed
+        self.ball_y_grid += self.ball_dy_grid * speed
 
         # Bouncing off walls
         if self.ball_x_grid < 0 or self.ball_x_grid + config.BALL_SIZE_GRID > config.GRID_WIDTH:
@@ -90,6 +100,12 @@ class GameState:
                     # Vertical collision
                     self.ball_dy_grid *= -1
                 break
+    
+    def apply_action(self, action):
+        """Applies the provided action to move the paddle."""
+        self.paddle_dx_grid = action
+        self.paddle_x_grid += self.paddle_dx_grid
+        self.paddle_x_grid = max(0, min(self.paddle_x_grid, config.GRID_WIDTH - config.PADDLE_WIDTH_GRID))
 
     def _reset_game_after_miss(self):
         """Resets game state if ball misses the paddle (as per PDF)."""
