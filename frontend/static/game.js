@@ -6,10 +6,41 @@ const ctx = canvas.getContext('2d');
 let CANVAS_WIDTH = 600;
 let CANVAS_HEIGHT = 400;
 
+// Function to get the game mode (AI Agent or Human Player)
+function getGameMode() {
+    return document.getElementById('modeSwitch').checked ? 'AI Agent' : 'Human Player';
+}
+
+// Human player paddle motion
+let paddleAction = 0;
+// Move paddle left and right using arrows
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') {
+        paddleAction = -1;
+    } else if (event.key === 'ArrowRight') {
+        paddleAction = 1;
+    }
+});
+// Halt paddle movement when keys are released
+document.addEventListener('keyup', (event) => {
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        paddleAction = 0;
+    }
+});
+
 // Function to fetch game state from Python backend
 async function fetchGameState() {
+    const mode = getGameMode();
+    let body = { mode: mode };
+    if (mode === 'Human Player') {
+        body.action = paddleAction;
+    }
     try {
-        const response = await fetch('http://127.0.0.1:5000/game_state');
+        const response = await fetch('http://127.0.0.1:5000/game_state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
         const data = await response.json();
         return data;
     } catch (error) {
@@ -61,6 +92,7 @@ function draw(gameState) {
 async function gameLoop() {
     const gameState = await fetchGameState();
     draw(gameState);
+    //setTimeout(() => requestAnimationFrame(gameLoop), 0);
     requestAnimationFrame(gameLoop);
 }
 
