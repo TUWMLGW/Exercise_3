@@ -92,6 +92,17 @@ canvas {
     cursor: pointer;
 }
 
+#trainButton {
+    padding: 8px 24px;
+    font-size: 1.1em;
+    margin-top: 12px;
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
 #resetButton {
     display: none;
     padding: 8px 24px;
