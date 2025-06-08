@@ -5,39 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Atari Breakout Using RL</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #333;
-            margin: 0;
-            font-family: sans-serif;
-            color: white;
-        }
-        canvas {
-            border: 2px solid #555;
-            background-color: black;
-        }
-        .info {
-            margin-top: 10px;
-            font-size: 0.9em;
-        }
-    </style>
 </head>
 <body>
     <h1>ATARI BREAKOUT</h1>
     <h2>with reinforcement learning agent</h2>
-    <div class="mode-switch">
-        <label class="switch">
-            <input type="checkbox" id="modeSwitch">
-            <span class="slider"></span>
+    <div id="startScreen">
+        <h2>SETTINGS</h2>
+        <label>
+            <input type="radio" name="mode" value="Human Player" checked> Human Player
         </label>
-        <span class="label">Watch AI Agent Play</span>
+        <label>
+            <input type="radio" name="mode" value="AI Agent"> AI Agent
+        </label>
+        <div>
+            <label>Board Size:
+                <input type="number" id="boardWidth" value="15" min="3" max="60"> x
+                <input type="number" id="boardHeight" value="10" min="5" max="60">
+            </label>
+        </div>
+        <p>Note: Blocks are 3x1, so width must be a multiple of 3 and height bigger than 5</p>
+        <button id="startButton">PLAY</button>
     </div>
     <canvas id="gameCanvas"></canvas>
+    <button id="resetButton">RESET</button>
     <div class="info">
         <p>Check out the code on <a href="https://github.com/TUWMLGW/Exercise_3">GitHub</a></p>
     </div>

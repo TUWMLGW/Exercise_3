@@ -1,14 +1,37 @@
-// This script fetches the game state from the Python backend and draws it on a canvas
-
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let CANVAS_WIDTH = 600;
-let CANVAS_HEIGHT = 400;
+let selectedMode = 'Human Player';
+let firstFetch = true;
+let gameStarted = false;
+
+// Start screen
+document.getElementById('startButton').onclick = function() {
+    selectedMode = document.querySelector('input[name="mode"]:checked').value;
+    boardWidth = parseInt(document.getElementById('boardWidth').value, 10);
+    boardHeight = parseInt(document.getElementById('boardHeight').value, 10);
+
+    canvas.style.display = 'block';
+    document.getElementById('resetButton').style.display = 'inline-block';
+    document.querySelector('.info').style.display = 'block';
+    document.getElementById('startScreen').style.display = 'none';
+    gameStarted = true;
+    firstFetch = true;
+}
+
+// Resetting the game
+document.getElementById('resetButton').onclick = function() {
+    document.getElementById('startScreen').style.display = 'flex';
+    canvas.style.display = 'none';
+    document.getElementById('resetButton').style.display = 'none';
+    document.querySelector('.info').style.display = 'none';
+    gameStarted = false;
+    firstFetch = false;
+}
 
 // Function to get the game mode (AI Agent or Human Player)
 function getGameMode() {
-    return document.getElementById('modeSwitch').checked ? 'AI Agent' : 'Human Player';
+    return selectedMode;
 }
 
 // Human player paddle motion
@@ -35,6 +58,11 @@ async function fetchGameState() {
     if (mode === 'Human Player') {
         body.action = paddleAction;
     }
+    if (firstFetch) {  
+        body.boardWidth = boardWidth;
+        body.boardHeight = boardHeight;
+        firstFetch = false;
+    }
     try {
         const response = await fetch('http://127.0.0.1:5000/game_state', {
             method: 'POST',
@@ -42,6 +70,11 @@ async function fetchGameState() {
             body: JSON.stringify(body)
         });
         const data = await response.json();
+        if (data.error) {
+            alert(data.error);
+            document.getElementById('resetButton').click();
+            return null;
+        }
         return data;
     } catch (error) {
         console.error('Error fetching game state:', error);
@@ -97,10 +130,14 @@ function draw(gameState) {
 
 // Main animation loop
 async function gameLoop() {
-    const gameState = await fetchGameState();
-    draw(gameState);
-    //setTimeout(() => requestAnimationFrame(gameLoop), 0);
-    requestAnimationFrame(gameLoop);
+    if (gameStarted) {
+        const gameState = await fetchGameState();
+        draw(gameState);
+        requestAnimationFrame(gameLoop);
+    } else {
+        setTimeout(gameLoop, 100);
+    }
+    
 }
 
 gameLoop();
