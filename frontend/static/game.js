@@ -19,12 +19,26 @@ document.getElementById('startButton').onclick = function() {
     firstFetch = true;
 }
 
+// Training RL Agent
+document.getElementById('trainButton').onclick = async function() {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/train_agent', { method: 'POST' });
+        const data = await response.json();
+        if (data.status === 'trained') {
+            document.getElementById('trainButton').style['background-color'] = 'green';
+        }
+    } catch (error) {
+        alert('Training failed')
+    }
+}
+
 // Resetting the game
 document.getElementById('resetButton').onclick = function() {
     document.getElementById('startScreen').style.display = 'flex';
     canvas.style.display = 'none';
     document.getElementById('resetButton').style.display = 'none';
     document.querySelector('.info').style.display = 'none';
+    document.getElementById('trainButton').style['background-color'] = '#f39c12'
     gameStarted = false;
     firstFetch = false;
 }
@@ -134,6 +148,20 @@ function draw(gameState) {
     ctx.fillText("Time: " + (gameState.time || 0), 15, canvas.height - 15);
     ctx.restore();
 
+    if (gameState.game_over) {
+        ctx.save();
+        ctx.font = '24px Verdana';
+        ctx.fillStyle = '#2c3e50';
+        ctx.fillRect(canvas.width/4, canvas.height/4, canvas.width/2, canvas.height/2);
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.fillText("You Won, Congrats!", canvas.width/2 - 7, canvas.height/2 - 20);
+        ctx.font = '16px Verdana';
+        ctx.fillText("Score: " + (gameState.score || 0), canvas.width/2, canvas.height/2 + 30);
+        ctx.fillText("Time: " + (gameState.time || 0), canvas.width/2, canvas.height/2 + 60);
+        ctx.textAlign = 'start';
+        ctx.restore();
+    }
 }
 
 // Main animation loop
@@ -142,6 +170,10 @@ async function gameLoop() {
         const gameState = await fetchGameState();
         draw(gameState);
         requestAnimationFrame(gameLoop);
+        if (gameState && gameState.game_over) {
+            gameStarted = false;
+            return
+        }
     } else {
         setTimeout(gameLoop, 100);
     }

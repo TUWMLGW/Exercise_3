@@ -35,7 +35,7 @@ BALL_SPEED_AI_AGENT = 1
 PADDLE_INITIAL_DX_GRID = 0
 
 # --- Reinforcement Learning Hyperparameters ---
-EPSILON = 0.1  # For epsilon-greedy policy
+EPSILON = 0.1 
 DISCOUNT_FACTOR = 0.99
-LEARNING_RATE = 0.1 # Alpha for Q-value updates
+LEARNING_RATE = 0.1
 NUM_EPISODES = 10000

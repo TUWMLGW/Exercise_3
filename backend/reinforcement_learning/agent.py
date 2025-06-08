@@ -7,16 +7,15 @@ class MLAgent:
     """Implements the Monte Carlo Control algorithm."""
     def __init__(self):
         self.q_table = {}  # Q(s, a) values
-        self.returns_sum = {} # Sum of returns for each (s,a) pair
-        self.returns_count = {} # Count of visits for each (s,a) pair
-        self.possible_actions = [-1, 0, 1] # Paddle speed change: left, stay, right
+        self.rewards_sum = {} # Reward sum for each (s,a)
+        self.returns_count = {} # Visit count for each (s,a)
+        self.possible_actions = [-1, 0, 1] # Paddle movement
 
     def train_episode(self):
         """Runs a single episode of the game for training."""
-        game_state = GameState() # Initialize a new game
-        episode_history = [] # Store (state, action, reward) tuples
+        game_state = GameState()
+        episode_history = []
 
-        # You would run the game loop here:
         # while not game_state.is_game_over():
         #     discrete_state = discretize_state(game_state)
         #     action = choose_action_epsilon_greedy(self.q_table, discrete_state, self.possible_actions)

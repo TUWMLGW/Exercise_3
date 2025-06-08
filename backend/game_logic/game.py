@@ -5,6 +5,7 @@ class GameState:
     def __init__(self):
         # Game mode
         self.mode = 'Human Player'  # Alternatively 'AI Agent'
+        self.game_over = False
         # Score and time
         self.score = 0
         self.time = 0
@@ -44,6 +45,8 @@ class GameState:
         
     def update(self):
         """Updates the game state for one timestep, using GRID UNITS."""
+        if self.game_over:
+            return
         speed = self.get_speed()
         # Increase time
         self.time += 1
@@ -145,6 +148,9 @@ class GameState:
                 self.ball_dx_grid *= -1
                 if self.ball_dx_grid == 0: # random direction to avoid getting stuck
                     self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
+        
+        if all(brick['was_hit'] for brick in self.bricks):
+            self.game_over = True
     
     def apply_action(self, action):
         """Applies the provided action to move the paddle."""
@@ -198,6 +204,7 @@ class GameState:
             ],
             'score': self.score,
             'time': self.time,
+            'game_over': self.game_over,
             'screen': {
                 'width': config.GRID_WIDTH * config.GRID_UNIT_SIZE,
                 'height': config.GRID_HEIGHT * config.GRID_UNIT_SIZE

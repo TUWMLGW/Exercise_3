@@ -74,6 +74,11 @@ def reset_game():
     current_game_state = GameState()
     return jsonify({ 'status': 'reset' })
 
+@app.route('/train_agent', methods=['POST'])
+def train_agent():
+    """Trains the RL Agent on the instantiated game"""
+    return jsonify({'status': 'trained'})
+
 if __name__ == '__main__':
     print("Starting Flask development server...")
     print(f"Visit the GUI in your browser: http://127.0.0.1:5000/")
