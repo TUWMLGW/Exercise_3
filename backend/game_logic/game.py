@@ -151,13 +151,17 @@ class GameState:
 
     def _reset_game_after_miss(self):
         """Resets game state if ball misses the paddle (as per PDF)."""
+        # Reset score
         self.score = 0
+        # Place paddle back in center with speed 0
         self.paddle_x_grid = (config.GRID_WIDTH // 2) - (config.PADDLE_WIDTH_GRID // 2)
         self.paddle_dx_grid = 0
+        # Shoot ball randomly from center
         self.ball_x_grid = config.GRID_WIDTH // 2
         self.ball_y_grid = config.GRID_HEIGHT // 2
         self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
         self.ball_dy_grid = config.BALL_INITIAL_DY_GRID # Still moves vertically
+        # Make all bricks reappear
         for brick in self.bricks:
             brick['was_hit'] = False
 
