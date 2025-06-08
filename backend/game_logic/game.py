@@ -6,13 +6,15 @@ class GameState:
         # Game mode
         self.mode = 'Human Player'  # Alternatively 'AI Agent'
 
+        # Score
+        self.score = 0
+
         # Initialize positions in GRID UNITS
         self.ball_x_grid = config.GRID_WIDTH // 2
         self.ball_y_grid = config.GRID_HEIGHT // 2
 
         # Ball initial direction is chosen at random from specified choices
-        initial_dx_choices = [-2, -1, 0, 1, 2] 
-        self.ball_dx_grid = random.choice(initial_dx_choices)
+        self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
         self.ball_dy_grid = config.BALL_INITIAL_DY_GRID
 
         # Paddle
@@ -52,6 +54,8 @@ class GameState:
         # Collision with top border
         if self.ball_y_grid < 0:
             self.ball_dy_grid *= -1
+            if self.ball_dx_grid == 0: # random direction to avoid getting stuck
+                self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
 
         # Collision with paddle
         paddle_top = (config.GRID_HEIGHT - config.PADDLE_HEIGHT_GRID)
@@ -61,6 +65,7 @@ class GameState:
             self.ball_x_grid <= self.paddle_x_grid + config.PADDLE_WIDTH_GRID
         ):
             self.ball_dy_grid *= -1
+            self.ball_y_grid = paddle_top - config.BALL_SIZE_GRID
         
         # Ball misses paddle
         if self.ball_y_grid + config.BALL_SIZE_GRID > config.GRID_HEIGHT:
@@ -68,6 +73,7 @@ class GameState:
             return
 
         # Ball collision with bricks
+        collided_bricks = []
         for brick in self.bricks:
             if brick['was_hit']:
                 continue
@@ -90,16 +96,50 @@ class GameState:
                 ball_bottom > brick_top and
                 ball_top < brick_bottom
             ):
-                brick['was_hit'] = True
+                collided_bricks.append(brick)
 
-                # Determine collision direction
-                if (ball_left < brick_right and ball_right > brick_left):
-                    # Horizontal collision
-                    self.ball_dx_grid *= -1
-                else:
-                    # Vertical collision
-                    self.ball_dy_grid *= -1
-                break
+        # Pick one at random; ensures that each time no more than a single brick is removed
+        if collided_bricks: 
+            if self.ball_dy_grid > 0:
+                target_row = max(brick['row'] for brick in collided_bricks)
+            else:
+                target_row = min(brick['row'] for brick in collided_bricks)
+            target_bricks = [b for b in collided_bricks if b['row'] == target_row]
+            brick = random.choice(target_bricks)
+            brick['was_hit'] = True
+            if brick['row'] == 0:
+                self.score += 7
+            elif brick['row'] == 1:
+                self.score += 5
+            elif brick['row'] == 2:
+                self.score += 3
+
+            bx, by = brick['x_grid'], brick['y_grid']
+            bw, bh = brick['width_grid'], brick['height_grid']
+
+            ball_left = self.ball_x_grid
+            ball_right = self.ball_x_grid + config.BALL_SIZE_GRID
+            ball_top = self.ball_y_grid
+            ball_bottom = self.ball_y_grid + config.BALL_SIZE_GRID
+
+            brick_left = bx
+            brick_right = bx + bw
+            brick_top = by
+            brick_bottom = by + bh
+
+            # Determine collision direction
+            vertical_overlap = min(ball_bottom, brick_bottom) - max(ball_top, brick_top)
+            horizontal_overlap = min(ball_right, brick_right) - max(ball_left, brick_left)
+            if vertical_overlap < horizontal_overlap:
+                # Ball hits bottom of brick
+                self.ball_dy_grid *= -1
+                if self.ball_dx_grid == 0: # random direction to avoid getting stuck
+                    self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
+            else:
+                # Ball hits side of brick
+                self.ball_dx_grid *= -1
+                if self.ball_dx_grid == 0: # random direction to avoid getting stuck
+                    self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
     
     def apply_action(self, action):
         """Applies the provided action to move the paddle."""
@@ -109,19 +149,20 @@ class GameState:
 
     def _reset_game_after_miss(self):
         """Resets game state if ball misses the paddle (as per PDF)."""
+        self.score = 0
         self.paddle_x_grid = (config.GRID_WIDTH // 2) - (config.PADDLE_WIDTH_GRID // 2)
         self.paddle_dx_grid = 0
         self.ball_x_grid = config.GRID_WIDTH // 2
         self.ball_y_grid = config.GRID_HEIGHT // 2
-        initial_dx_choices = [-2, -1, 0, 1, 2]
-        self.ball_dx_grid = random.choice(initial_dx_choices)
+        self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
         self.ball_dy_grid = config.BALL_INITIAL_DY_GRID # Still moves vertically
         for brick in self.bricks:
             brick['was_hit'] = False
 
     def get_state_for_display(self):
         """
-        Returns a dictionary with PIXEL coordinates suitable for JSON serialization to the frontend.
+        Differentiates between hit bricks and non-hit bricks.
+        Returns a dict with pixel coordinates suitable for JSON serialization to the frontend.
         All grid unit values are multiplied by GRID_UNIT_SIZE for display.
         """
         return {
@@ -130,7 +171,6 @@ class GameState:
                 'y': self.ball_y_grid * config.GRID_UNIT_SIZE + config.BALL_RADIUS_PIXELS,
                 'radius': config.BALL_RADIUS_PIXELS
             },
-            # For the demo brick, we'll send it as a 'brick' type, but it's your paddle visual
             'paddle': {
                 'x': self.paddle_x_grid * config.GRID_UNIT_SIZE,
                 'y': (config.GRID_HEIGHT - config.PADDLE_HEIGHT_GRID) * config.GRID_UNIT_SIZE, # Place paddle at bottom of grid
@@ -147,6 +187,7 @@ class GameState:
                     'row': brick['row']
                 } for brick in self.bricks if not brick['was_hit']
             ],
+            'score': self.score,
             'screen': {
                 'width': config.SCREEN_WIDTH,
                 'height': config.SCREEN_HEIGHT

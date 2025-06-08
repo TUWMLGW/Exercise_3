@@ -86,6 +86,13 @@ function draw(gameState) {
         ctx.radius = 5;
         ctx.strokeRect(brick.x, brick.y, brick.width, brick.height);
     });
+
+    // Draw Score
+    ctx.save();
+    ctx.font = '20px Verdana';
+    ctx.fillStyle = 'white';
+    ctx.fillText("Score: " + (gameState.score || 0), 15, 25);
+    ctx.restore();
 }
 
 // Main animation loop
