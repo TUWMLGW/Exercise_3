@@ -5,8 +5,9 @@ class GameState:
     def __init__(self):
         # Game mode
         self.mode = 'Human Player'  # Alternatively 'AI Agent'
-        # Score
+        # Score and time
         self.score = 0
+        self.time = 0
 
         # Initialize ball position in center
         self.ball_x_grid = config.GRID_WIDTH // 2
@@ -44,6 +45,8 @@ class GameState:
     def update(self):
         """Updates the game state for one timestep, using GRID UNITS."""
         speed = self.get_speed()
+        # Increase time
+        self.time += 1
 
         # Update Ball Position
         self.ball_x_grid += self.ball_dx_grid * speed
@@ -194,6 +197,7 @@ class GameState:
                 } for brick in self.bricks if not brick['was_hit']
             ],
             'score': self.score,
+            'time': self.time,
             'screen': {
                 'width': config.GRID_WIDTH * config.GRID_UNIT_SIZE,
                 'height': config.GRID_HEIGHT * config.GRID_UNIT_SIZE

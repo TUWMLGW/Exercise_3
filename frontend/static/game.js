@@ -109,7 +109,7 @@ function draw(gameState) {
 
     // Draw Bricks (using gameState.bricks)
     const rowColors = ['red', 'orange', 'yellow'];
-    const borderColor = 'black';
+    const borderColor = '#2c3e50';
     gameState.bricks.forEach(brick => {
         const color = rowColors[brick.row % rowColors.length];
         ctx.fillStyle = color;
@@ -126,6 +126,14 @@ function draw(gameState) {
     ctx.fillStyle = 'white';
     ctx.fillText("Score: " + (gameState.score || 0), 15, 25);
     ctx.restore();
+
+    // Display timer
+    ctx.save();
+    ctx.font = '20px Verdana';
+    ctx.fillStyle = 'white';
+    ctx.fillText("Time: " + (gameState.time || 0), 15, canvas.height - 15);
+    ctx.restore();
+
 }
 
 // Main animation loop
