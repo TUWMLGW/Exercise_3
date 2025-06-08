@@ -35,9 +35,22 @@ def get_game_state():
     Provides current game state to the frontend and identifies game mode.
     This endpoint will be called repeatedly by the JavaScript to update the visualization.
     """
+    global current_game_state
     if request.method == 'POST':
         data = request.get_json()
         mode = data.get('mode', 'Human Player')
+        board_width = data.get('boardWidth')
+        board_height = data.get('boardHeight')
+
+        if board_width and board_height:
+            if int(board_width) % config.BRICK_WIDTH_GRID != 0:
+                return jsonify({
+                    "error": f"Board width {board_width} must be a multiple of {config.BRICK_WIDTH_GRID}."
+                }), 400
+            config.GRID_WIDTH = int(board_width)
+            config.GRID_HEIGHT = int(board_height)
+            current_game_state = GameState()
+
         current_game_state.mode = mode
         # AI Agent Mode
         if mode == 'AI Agent':
@@ -47,10 +60,19 @@ def get_game_state():
         else:
             action = data.get('action', 0)
             current_game_state.apply_action(action)
+
         current_game_state.update()
+        
         return jsonify(current_game_state.get_state_for_display())
     else:
         return jsonify(current_game_state.get_state_for_display())
+
+@app.route('/reset_game', methods=['POST'])
+def reset_game():
+    """Resets the game"""
+    global current_game_state
+    current_game_state = GameState()
+    return jsonify({ 'status': 'reset' })
 
 if __name__ == '__main__':
     print("Starting Flask development server...")

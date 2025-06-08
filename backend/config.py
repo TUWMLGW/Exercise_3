@@ -6,15 +6,10 @@ GRID_HEIGHT = 10 # e.g., 10 units high
 # Pixels per abstract grid unit.
 GRID_UNIT_SIZE = 40 # For 15x10 grid, 40 pixels/unit gives 600x400 screen
 
-# --- GUI Screen Dimensions ---
-SCREEN_WIDTH = GRID_WIDTH * GRID_UNIT_SIZE
-SCREEN_HEIGHT = GRID_HEIGHT * GRID_UNIT_SIZE
-
 # -- BRICK LAYOUT ---
-NUM_BRICKS_PER_ROW = 5
-NUM_ROWS = 3 
-BRICK_WIDTH_GRID = GRID_WIDTH // NUM_BRICKS_PER_ROW # Bricks are 3x1 
+BRICK_WIDTH_GRID = 3 # Bricks are 3x1 
 BRICK_HEIGHT_GRID = 1
+NUM_BRICK_ROWS = 3 
 
 # --- Element Dimensions (in GRID UNITS) ---
 BALL_SIZE_GRID = 1 # Ball is 1x1

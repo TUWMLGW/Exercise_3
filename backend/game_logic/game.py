@@ -5,11 +5,10 @@ class GameState:
     def __init__(self):
         # Game mode
         self.mode = 'Human Player'  # Alternatively 'AI Agent'
-
         # Score
         self.score = 0
 
-        # Initialize positions in GRID UNITS
+        # Initialize ball position in center
         self.ball_x_grid = config.GRID_WIDTH // 2
         self.ball_y_grid = config.GRID_HEIGHT // 2
 
@@ -23,8 +22,8 @@ class GameState:
 
         # Bricks
         self.bricks = []
-        for row in range(config.NUM_ROWS):
-            for col in range(config.NUM_BRICKS_PER_ROW):
+        for row in range(config.NUM_BRICK_ROWS):
+            for col in range(config.GRID_WIDTH // config.BRICK_WIDTH_GRID):
                 brick = {
                     'x_grid': col * config.BRICK_WIDTH_GRID,
                     'y_grid': row * config.BRICK_HEIGHT_GRID,
@@ -34,14 +33,17 @@ class GameState:
                     'row': row,
                 }
                 self.bricks.append(brick)
+
+    def get_speed(self):
+        """Returns the current speed of the ball based on the game mode."""
+        if self.mode == 'AI Agent':
+            return config.BALL_SPEED_AI_AGENT
+        else:
+            return config.BALL_SPEED_HUMAN_PLAYER
         
     def update(self):
         """Updates the game state for one timestep, using GRID UNITS."""
-        # Identify ball movement speed based on mode
-        if self.mode == 'AI Agent':
-            speed = config.BALL_SPEED_AI_AGENT
-        else:
-            speed = config.BALL_SPEED_HUMAN_PLAYER
+        speed = self.get_speed()
 
         # Update Ball Position
         self.ball_x_grid += self.ball_dx_grid * speed
@@ -189,7 +191,7 @@ class GameState:
             ],
             'score': self.score,
             'screen': {
-                'width': config.SCREEN_WIDTH,
-                'height': config.SCREEN_HEIGHT
+                'width': config.GRID_WIDTH * config.GRID_UNIT_SIZE,
+                'height': config.GRID_HEIGHT * config.GRID_UNIT_SIZE
             }
         }
