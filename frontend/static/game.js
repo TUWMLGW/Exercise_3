@@ -1,11 +1,10 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const progressBarFill = document.getElementById('progressBarFill');
 
 
 let selectedMode = 'Human Player';
 let firstFetch = true;
-let gameStarted = false;
+let gameStarted = true;
 // Start screen
 document.getElementById('startButton').onclick = function() {
     selectedMode = document.querySelector('input[name="mode"]:checked').value;
@@ -128,11 +127,11 @@ function draw(gameState) {
     ctx.fill();
     ctx.closePath();
 
-    // Draw Paddle (using 'paddle' data from backend)
-    ctx.fillStyle = 'blue'; // Or another color for the paddle
+    // Draw Paddle
+    ctx.fillStyle = 'blue';
     ctx.fillRect(gameState.paddle.x, gameState.paddle.y, gameState.paddle.width, gameState.paddle.height);
 
-    // Draw Bricks (using gameState.bricks)
+    // Draw Bricks
     const rowColors = ['red', 'orange', 'yellow'];
     const borderColor = '#2c3e50';
     gameState.bricks.forEach(brick => {
