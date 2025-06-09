@@ -1,10 +1,11 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const progressBarFill = document.getElementById('progressBarFill');
+
 
 let selectedMode = 'Human Player';
 let firstFetch = true;
 let gameStarted = false;
-
 // Start screen
 document.getElementById('startButton').onclick = function() {
     selectedMode = document.querySelector('input[name="mode"]:checked').value;
@@ -22,7 +23,11 @@ document.getElementById('startButton').onclick = function() {
 // Training RL Agent
 document.getElementById('trainButton').onclick = async function() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/train_agent', { method: 'POST' });
+        const response = await fetch('http://127.0.0.1:5000/train_agent', 
+            { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
         const data = await response.json();
         if (data.status === 'trained') {
             document.getElementById('trainButton').style['background-color'] = 'green';

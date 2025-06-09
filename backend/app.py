@@ -1,11 +1,12 @@
 import os
 from flask import Flask, render_template, jsonify, request # type: ignore
 from flask_cors import CORS # type: ignore
+from tqdm import tqdm
 
 from backend import config
 from backend.game_logic.game import GameState
 
-from backend.reinforcement_learning.agent import MLAgent
+from backend.reinforcement_learning.agent import RLAgent
 
 
 # --- Flask App Initialization ---
@@ -19,7 +20,7 @@ CORS(app)
 
 # --- Game Instance ---
 current_game_state = GameState()
-rl_agent = MLAgent()
+rl_agent = RLAgent()
 
 # --- FLask Routes ---
 @app.route('/')
@@ -77,6 +78,16 @@ def reset_game():
 @app.route('/train_agent', methods=['POST'])
 def train_agent():
     """Trains the RL Agent on the instantiated game"""
+    save_dir = os.path.join("saved", f"W{config.GRID_WIDTH}_H{config.GRID_HEIGHT}")
+    filename = os.path.join(save_dir, "rl_agent.pkl")
+    grid_dimension = (config.GRID_WIDTH, config.GRID_HEIGHT)
+    if os.path.exists(filename):
+        rl_agent = RLAgent.load_agent(grid_dimension)
+    else:
+        rl_agent = RLAgent()
+        for episode in tqdm(range(config.NUM_EPISODES)):
+            rl_agent.train_episode()
+        rl_agent.save(grid_dimension)
     return jsonify({'status': 'trained'})
 
 if __name__ == '__main__':

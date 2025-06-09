@@ -42,6 +42,20 @@ class GameState:
             return config.BALL_SPEED_AI_AGENT
         else:
             return config.BALL_SPEED_HUMAN_PLAYER
+
+    def get_reward(self):
+        """Returns the reward for the current state, i.e. -1 for each timestep."""
+        return -self.time
+
+    def from_state(self, state):
+        """Sets the current GameState's attributes from a dict"""
+        self.ball_x_grid = state.get('ball_x_grid', self.ball_x_grid)
+        self.ball_y_grid = state.get('ball_y_grid', self.ball_y_grid)
+        self.paddle_x_grid = state.get('paddle_x_grid', self.paddle_x_grid)
+        self.ball_dx_grid = state.get('ball_dx_grid', self.ball_dx_grid)
+        self.ball_dy_grid = state.get('ball_dy_grid', self.ball_dy_grid)
+        
+        return self
         
     def update(self):
         """Updates the game state for one timestep, using GRID UNITS."""

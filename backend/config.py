@@ -37,5 +37,4 @@ PADDLE_INITIAL_DX_GRID = 0
 # --- Reinforcement Learning Hyperparameters ---
 EPSILON = 0.1 
 DISCOUNT_FACTOR = 0.99
-LEARNING_RATE = 0.1
-NUM_EPISODES = 10000
+NUM_EPISODES = 10
