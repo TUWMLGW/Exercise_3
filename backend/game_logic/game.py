@@ -172,7 +172,7 @@ class GameState:
         
         if all(brick['was_hit'] for brick in self.bricks):
             self.game_over = True
-            game_logger.info(f"You Won! All bricks eliminated. Final Score: {self.score}")
+            game_logger.info(f"You Won! All bricks eliminated. Final Score: {self.score}. Final Reward: {-self.time}")
 
     
     def apply_action(self, action):

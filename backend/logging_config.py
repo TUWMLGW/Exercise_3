@@ -1,10 +1,20 @@
 import logging
 import os
 from datetime import datetime
+import glob
 
 def setup_logging():
     """Sets up the logging configuration."""
     logging_dir = "logs"
+    log_file_pattern = os.path.join(logging_dir, "breakout_logs_*.log")
+
+    if os.path.exists(logging_dir):
+        old_log_files = glob.glob(log_file_pattern)
+        for old_file in old_log_files:
+            try:
+                os.remove(old_file)
+            except OSError as e:
+                print(f"Error deleting old log file {old_file}: {e}")
     log_filename = datetime.now().strftime("breakout_logs_%Y%m%d_%H%M%S.log")
     log_filepath = os.path.join(logging_dir, log_filename)
     os.makedirs(logging_dir, exist_ok=True)

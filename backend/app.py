@@ -106,7 +106,7 @@ def train_agent():
         for episode in tqdm(range(config.NUM_EPISODES)):
             rl_agent.train_episode()
         rl_agent.save(grid_dimension)
-        app_logger.info(f"Training completed and agent saved for {board_width}x{board_heigth} dimensions.")
+        app_logger.info(f"Training completed and agent saved for {board_width}x{board_height} dimensions.")
     return jsonify({'status': 'trained'})
 
 if __name__ == '__main__':
