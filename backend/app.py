@@ -37,6 +37,7 @@ def get_game_state():
     This endpoint will be called repeatedly by the JavaScript to update the visualization.
     """
     global current_game_state
+    global rl_agent
     if request.method == 'POST':
         data = request.get_json()
         mode = data.get('mode', 'Human Player')
@@ -86,6 +87,7 @@ def train_agent():
     save_dir = os.path.join("backend/reinforcement_learning/saved", f"W{board_width}_H{board_height}")
     filename = os.path.join(save_dir, "rl_agent.pkl")
     grid_dimension = (board_width, board_height)
+    global rl_agent
     if os.path.exists(filename):
         rl_agent = RLAgent.load_agent(grid_dimension)
     else:
