@@ -23,15 +23,21 @@ document.getElementById('startButton').onclick = function() {
 // Training RL Agent
 document.getElementById('trainButton').onclick = async function() {
     try {
+        let body = {
+            boardWidth: parseInt(document.getElementById('boardWidth').value, 10),
+            boardHeight: parseInt(document.getElementById('boardHeight').value, 10)
+        };
         const response = await fetch('http://127.0.0.1:5000/train_agent', 
             { 
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
             });
         const data = await response.json();
         if (data.status === 'trained') {
             document.getElementById('trainButton').style['background-color'] = 'green';
         }
+        return data;
     } catch (error) {
         alert('Training failed')
     }

@@ -82,7 +82,7 @@ class RLAgent:
 
         return state
 
-    def save(self, grid_dimension, directory="saved"):
+    def save(self, grid_dimension, directory="backend/reinforcement_learning/saved"):
         """
         Saves the agent's learned parameters to a file.
         """
@@ -109,7 +109,7 @@ class RLAgent:
             print(f"Error saving agent to {filename}: {e}")
 
     @classmethod
-    def load_agent(cls, grid_dimension, directory="saved"):
+    def load_agent(cls, grid_dimension, directory="backend/reinforcement_learning/saved"):
         """
         Loads an agent's learned parameters. 
         """

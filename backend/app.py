@@ -78,9 +78,14 @@ def reset_game():
 @app.route('/train_agent', methods=['POST'])
 def train_agent():
     """Trains the RL Agent on the instantiated game"""
-    save_dir = os.path.join("saved", f"W{config.GRID_WIDTH}_H{config.GRID_HEIGHT}")
+    data = request.get_json()
+    board_width = data.get('boardWidth')
+    board_height = data.get('boardHeight')
+    print(board_width, board_height)
+
+    save_dir = os.path.join("backend/reinforcement_learning/saved", f"W{board_width}_H{board_height}")
     filename = os.path.join(save_dir, "rl_agent.pkl")
-    grid_dimension = (config.GRID_WIDTH, config.GRID_HEIGHT)
+    grid_dimension = (board_width, board_height)
     if os.path.exists(filename):
         rl_agent = RLAgent.load_agent(grid_dimension)
     else:
