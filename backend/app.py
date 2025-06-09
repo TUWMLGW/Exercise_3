@@ -2,11 +2,12 @@ import os
 from flask import Flask, render_template, jsonify, request # type: ignore
 from flask_cors import CORS # type: ignore
 from tqdm import tqdm
+import logging
 
 from backend import config
 from backend.game_logic.game import GameState
-
 from backend.reinforcement_learning.agent import RLAgent
+from backend.logging_config import setup_logging
 
 
 # --- Flask App Initialization ---
@@ -17,6 +18,8 @@ app = Flask(
     static_folder=os.path.join(basedir, '..', 'frontend', 'static')
 )
 CORS(app)
+# --- App Logger ---
+app_logger = logging.getLogger("app")
 
 # --- Game Instance ---
 current_game_state = GameState()
@@ -25,9 +28,8 @@ rl_agent = RLAgent()
 # --- FLask Routes ---
 @app.route('/')
 def index():
-    """
-    Renders the HTML page.
-    """
+    """Renders the HTML page."""
+    app_logger.info("Accessing index page.")
     return render_template('index.html')
 
 @app.route('/game_state', methods=['GET', 'POST'])
@@ -46,6 +48,7 @@ def get_game_state():
 
         if board_width and board_height:
             if int(board_width) % config.BRICK_WIDTH_GRID != 0:
+                app_logger.info(f"Board width {board_width} is not a multiple of {config.BRICK_WIDTH_GRID}.")
                 return jsonify({
                     "error": f"Board width {board_width} must be a multiple of {config.BRICK_WIDTH_GRID}."
                 }), 400
@@ -58,10 +61,12 @@ def get_game_state():
         if mode == 'AI Agent':
             action = rl_agent.choose_action(current_game_state)
             current_game_state.apply_action(action)
+            app_logger.debug(f"AI Agent chose action: {action}")
         # Human Player Mode
         else:
             action = data.get('action', 0)
             current_game_state.apply_action(action)
+            app_logger.debug(f"Human Player chose action: {action}")
 
         current_game_state.update()
         
@@ -74,6 +79,7 @@ def reset_game():
     """Resets the game"""
     global current_game_state
     current_game_state = GameState()
+    app_logger.info(f"Game reset requested for dimensions: {config.GRID_WIDTH}x{config.GRID_HEIGHT}.")
     return jsonify({ 'status': 'reset' })
 
 @app.route('/train_agent', methods=['POST'])
@@ -82,7 +88,10 @@ def train_agent():
     data = request.get_json()
     board_width = data.get('boardWidth')
     board_height = data.get('boardHeight')
-    print(board_width, board_height)
+    app_logger.info(f"Training request received for dimensions: {board_width}x{board_height}.")
+
+    config.GRID_WIDTH = board_width
+    config.GRID_HEIGHT = board_height
 
     save_dir = os.path.join("backend/reinforcement_learning/saved", f"W{board_width}_H{board_height}")
     filename = os.path.join(save_dir, "rl_agent.pkl")
@@ -90,14 +99,18 @@ def train_agent():
     global rl_agent
     if os.path.exists(filename):
         rl_agent = RLAgent.load_agent(grid_dimension)
+        app_logger.info(f"Agent for {board_width}x{board_height} found on disk and successfully loaded for training. Agent's policy is as follows: {rl_agent.policy}")
     else:
+        app_logger.info(f"No agent found for {board_width}x{board_height}. Creating a new one for training.")
         rl_agent = RLAgent()
         for episode in tqdm(range(config.NUM_EPISODES)):
             rl_agent.train_episode()
         rl_agent.save(grid_dimension)
+        app_logger.info(f"Training completed and agent saved for {board_width}x{board_heigth} dimensions.")
     return jsonify({'status': 'trained'})
 
 if __name__ == '__main__':
-    print("Starting Flask development server...")
-    print(f"Visit the GUI in your browser: http://127.0.0.1:5000/")
+    setup_logging()
+    app_logger.info("Starting Flask development server...")
+    app_logger.info(f"Visit the GUI in your browser: http://127.0.0.1:5000/")
     app.run(debug=True)

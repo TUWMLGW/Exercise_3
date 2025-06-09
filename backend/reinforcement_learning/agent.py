@@ -5,6 +5,9 @@ import random
 import numpy as np
 import pickle
 import os
+import logging
+
+rl_agent_logger = logging.getLogger('rlagent')
 
 class RLAgent:
     """Implements the Monte Carlo Control with Exploring Starts algorithm."""
@@ -12,11 +15,13 @@ class RLAgent:
         self.q_table = {}  # Q(s, a) values = action-value function
         self.returns = {} # Reward sum for each (s,a)
         self.returns_count = {} # Visit count for each (s,a)
-        self.policies = {} # Policy for each state s
+        self.policy = {} # Policy for each state s
         self.possible_actions = [-1, 0, 1] # Paddle movement
+        rl_agent_logger.info("RLAgent instance created.")
 
     def train_episode(self):
         """Runs a single episode of the game for training."""
+        rl_agent_logger.info("Training agent on single episode")
         start_state = self.random_start_state()
         start_action = random.choice(self.possible_actions)
         game_state = GameState()
@@ -47,20 +52,21 @@ class RLAgent:
                 if (state, action) not in self.returns:
                     self.returns[(state, action)] = []
                 self.returns[(state, action)].append(G)
-                self.q_table[(state, action)] = np.mean(self.returns[(state, action)])
+                self.q_table[(state, action)] = int(np.mean(self.returns[(state, action)]))
 
                 q_values = [self.q_table.get((state, action), 0.0) for action in self.possible_actions]
                 best_action = self.possible_actions[np.argmax(q_values)]
-                self.policies[state] = best_action
+                self.policy[state] = best_action
+        rl_agent_logger.info(f"Policy: {self.policy}")
 
     def choose_action(self, game_state):
         """Picks an optimal action based on the provided game state (breaks ties randomly)."""
         discrete_state = discretize_state(game_state)
+        rl_agent_logger.info(f"Choosing best action based on policy: {self.policy}")
+        if discrete_state in self.policy:
+            return self.policy[discrete_state]
 
-        if discrete_state in self.policies:
-            return self.policies[discrete_state]
-
-        print("State not found")
+        rl_agent_logger.warning(f"Inference: State {discrete_state} not found in policy. Falling back to Q-table/random.")
         q_values = {action: self.q_table.get((discrete_state, action), 0.0) for action in self.possible_actions}
         if not q_values:
             print("No optimal values found, gonna play randomly")
@@ -68,7 +74,9 @@ class RLAgent:
 
         max_q = max(q_values.values())
         best_actions = [action for action, q in q_values.items() if q == max_q]
-        return random.choice(best_actions)
+        action = random.choice(best_actions)
+        rl_agent_logger.info(f"Inference: State={discrete_state}, Action={action})")
+        return action
 
     def random_start_state(self):
         """Returns a random start state (ball motion angle) for exploring starts."""
@@ -79,7 +87,7 @@ class RLAgent:
             'ball_dx_grid': random.choice(config.INITIAL_DX_CHOICES),
             'ball_dy_grid': config.BALL_INITIAL_DY_GRID
         }
-
+        rl_agent_logger.debug(f"Generated random start state: {state}")
         return state
 
     def save(self, grid_dimension, directory="backend/reinforcement_learning/saved"):
@@ -91,22 +99,22 @@ class RLAgent:
         filename = os.path.join(save_dir, "rl_agent.pkl")
 
         if os.path.exists(filename):
-            print(f"Agent already exists, skipping save.")
+            rl_agent_logger.info(f"Agent already exists at {filename}, skipping save.")
             return
 
         os.makedirs(save_dir, exist_ok=True)
         agent_data = {
             'q_table': self.q_table,
-            'policies': self.policies,
+            'policy': self.policy,
             'returns': self.returns,
             'game_dimensions': {'width': grid_width, 'height': grid_height},
         }
         try:
             with open(filename, 'wb') as f:
                 pickle.dump(agent_data, f)
-            print(f"Agent successfully saved to {filename}")
+            rl_agent_logger.info(f"Agent successfully saved to {filename}")
         except Exception as e:
-            print(f"Error saving agent to {filename}: {e}")
+            rl_agent_logger.error(f"Error saving agent to {filename}: {e}", exc_info=True)
 
     @classmethod
     def load_agent(cls, grid_dimension, directory="backend/reinforcement_learning/saved"):
@@ -123,16 +131,16 @@ class RLAgent:
             loaded_agent = cls()
 
             loaded_agent.q_table = agent_data.get('q_table', {})
-            loaded_agent.policies = agent_data.get('policies', {})
+            loaded_agent.policy = agent_data.get('policy', {})
             loaded_agent.returns = agent_data.get('returns', {})
             
-            print(f"Agent successfully loaded from {filename}")
+            rl_agent_logger.info(f"Agent successfully loaded from {filename}")
             return loaded_agent
 
         except FileNotFoundError:
-            print(f"Error: File '{filename}' not found. Returning a new, untrained agent.")
+            rl_agent_logger.error(f"File '{filename}' not found. Returning a new, untrained agent.")
             return cls()
 
         except Exception as e:
-            print(f"Error loading agent from {filename}: {e}. Returning a new, untrained agent.")
+            rl_agent_logger.error(f"Error loading agent from {filename}: {e}. Returning a new, untrained agent.")
             return cls()

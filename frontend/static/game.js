@@ -4,7 +4,7 @@ const ctx = canvas.getContext('2d');
 
 let selectedMode = 'Human Player';
 let firstFetch = true;
-let gameStarted = true;
+let gameStarted = false;
 // Start screen
 document.getElementById('startButton').onclick = function() {
     selectedMode = document.querySelector('input[name="mode"]:checked').value;

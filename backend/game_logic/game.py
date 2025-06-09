@@ -1,5 +1,8 @@
 import random
 from backend import config
+import logging
+
+game_logger = logging.getLogger('gamelogic')
 
 class GameState:
     def __init__(self):
@@ -36,6 +39,8 @@ class GameState:
                 }
                 self.bricks.append(brick)
 
+        game_logger.info(f"Game started!")
+
     def get_speed(self):
         """Returns the current speed of the ball based on the game mode."""
         if self.mode == 'AI Agent':
@@ -54,7 +59,7 @@ class GameState:
         self.paddle_x_grid = state.get('paddle_x_grid', self.paddle_x_grid)
         self.ball_dx_grid = state.get('ball_dx_grid', self.ball_dx_grid)
         self.ball_dy_grid = state.get('ball_dy_grid', self.ball_dy_grid)
-        
+
         return self
         
     def update(self):
@@ -72,6 +77,7 @@ class GameState:
         # Bouncing off walls
         if self.ball_x_grid < 0 or self.ball_x_grid + config.BALL_SIZE_GRID > config.GRID_WIDTH:
             self.ball_dx_grid *= -1
+            game_logger.debug(f"Ball hit wall at ({self.ball_x_grid}, {self.ball_y_grid})")
         
         # Collision with top border
         if self.ball_y_grid < 0:
@@ -129,6 +135,7 @@ class GameState:
             target_bricks = [b for b in collided_bricks if b['row'] == target_row]
             brick = random.choice(target_bricks)
             brick['was_hit'] = True
+            game_logger.info(f"Brick eliminated")
             if brick['row'] == 0:
                 self.score += 7
             elif brick['row'] == 1:
@@ -165,6 +172,8 @@ class GameState:
         
         if all(brick['was_hit'] for brick in self.bricks):
             self.game_over = True
+            game_logger.info(f"You Won! All bricks eliminated. Final Score: {self.score}")
+
     
     def apply_action(self, action):
         """Applies the provided action to move the paddle."""
@@ -184,6 +193,7 @@ class GameState:
         self.ball_y_grid = config.GRID_HEIGHT // 2
         self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
         self.ball_dy_grid = config.BALL_INITIAL_DY_GRID # Still moves vertically
+        game_logger.info(f"Game Over! Ball hit bottom. Final Score: {self.score}")
         # Make all bricks reappear
         for brick in self.bricks:
             brick['was_hit'] = False
