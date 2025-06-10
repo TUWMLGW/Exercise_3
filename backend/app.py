@@ -79,7 +79,7 @@ def reset_game():
     """Resets the game"""
     global current_game_state
     current_game_state = GameState()
-    app_logger.info(f"Game reset requested for dimensions: {config.GRID_WIDTH}x{config.GRID_HEIGHT}.")
+    app_logger.info(f"Game was reset successfully.")
     return jsonify({ 'status': 'reset' })
 
 @app.route('/train_agent', methods=['POST'])

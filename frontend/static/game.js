@@ -43,14 +43,27 @@ document.getElementById('trainButton').onclick = async function() {
 }
 
 // Resetting the game
-document.getElementById('resetButton').onclick = function() {
-    document.getElementById('startScreen').style.display = 'flex';
-    canvas.style.display = 'none';
-    document.getElementById('resetButton').style.display = 'none';
-    document.querySelector('.info').style.display = 'none';
-    document.getElementById('trainButton').style['background-color'] = '#f39c12'
-    gameStarted = false;
-    firstFetch = false;
+document.getElementById('resetButton').onclick = async function() {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/reset_game', 
+            { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+        const data = await response.json();
+        if (data.status === 'reset') {
+            document.getElementById('startScreen').style.display = 'flex';
+            canvas.style.display = 'none';
+            document.getElementById('resetButton').style.display = 'none';
+            document.querySelector('.info').style.display = 'none';
+            document.getElementById('trainButton').style['background-color'] = '#f39c12'
+            gameStarted = false;
+            firstFetch = false;
+        }
+        return data;
+    } catch (error) {
+        alert('Reset failed')
+    }
 }
 
 // Function to get the game mode (AI Agent or Human Player)
