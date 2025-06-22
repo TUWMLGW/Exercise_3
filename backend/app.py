@@ -3,9 +3,6 @@ from flask import Flask, render_template, jsonify, request # type: ignore
 from flask_cors import CORS # type: ignore
 from tqdm import tqdm
 import logging
-import time
-import csv
-from flask import Response
 import io
 import matplotlib.pyplot as plt
 from flask import send_file

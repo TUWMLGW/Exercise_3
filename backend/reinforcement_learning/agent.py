@@ -3,9 +3,6 @@ from backend import config
 from backend.reinforcement_learning.setup import discretize_state, choose_action_epsilon_greedy, count_state_action_pairs
 import random
 import numpy as np
-import matplotlib
-matplotlib.use('Agg') 
-import matplotlib.pyplot as plt
 import pickle
 import os
 import logging
