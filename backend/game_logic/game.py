@@ -85,12 +85,16 @@ class GameState:
         self.ball_y_grid += self.ball_dy_grid * speed
 
         # Bouncing off walls
-        if self.ball_x_grid < 0 or self.ball_x_grid + config.BALL_SIZE_GRID > config.GRID_WIDTH:
+        if self.ball_x_grid < 0:
+            self.ball_x_grid = 0
             self.ball_dx_grid *= -1
-            game_logger.debug(f"Ball hit wall at ({self.ball_x_grid}, {self.ball_y_grid})")
-        
+        elif self.ball_x_grid + config.BALL_SIZE_GRID > config.GRID_WIDTH:
+            self.ball_x_grid = config.GRID_WIDTH - config.BALL_SIZE_GRID
+            self.ball_dx_grid *= -1
+
         # Collision with top border
         if self.ball_y_grid < 0:
+            self.ball_y_grid = 0
             self.ball_dy_grid *= -1
             if self.ball_dx_grid == 0: # random direction to avoid getting stuck
                 self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
@@ -172,6 +176,8 @@ class GameState:
             if vertical_overlap < horizontal_overlap:
                 # Ball hits bottom of brick
                 self.ball_dy_grid *= -1
+                if self.ball_dy_grid > 0: # moving down now
+                    self.ball_y_grid = brick_bottom
                 if self.ball_dx_grid == 0: # random direction to avoid getting stuck
                     self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
             else:
@@ -179,6 +185,10 @@ class GameState:
                 self.ball_dx_grid *= -1
                 if self.ball_dx_grid == 0: # random direction to avoid getting stuck
                     self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
+                if self.ball_dx_grid > 0: # moving right now
+                    self.ball_x_grid = brick_right
+                else: # moving left now
+                    self.ball_x_grid = brick_left - config.BALL_SIZE_GRID
         
         if all(brick['was_hit'] for brick in self.bricks):
             self.game_over = True

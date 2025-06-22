@@ -125,8 +125,6 @@ def train_agent():
             rl_agent.train_episode()
         rl_agent.save(grid_dimension)
         app_logger.info(f"Training completed and agent saved for {board_width}x{board_height} dimensions.")
-        trajectory = rl_agent.record_trajectory()
-        rl_agent.plot_trajectory(trajectory)
     return jsonify({'status': 'trained'})
 
 @app.route('/download_trajectory', methods=['GET'])
