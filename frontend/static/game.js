@@ -5,9 +5,14 @@ const ctx = canvas.getContext('2d');
 let selectedMode = 'Human Player';
 let firstFetch = true;
 let gameStarted = false;
+let agentTrained = false;
 // Start screen
 document.getElementById('startButton').onclick = function() {
     selectedMode = document.querySelector('input[name="mode"]:checked').value;
+    if (selectedMode === 'AI Agent' && !agentTrained) {
+        alert('Please train the AI agent first!');
+        return;
+    }
     boardWidth = parseInt(document.getElementById('boardWidth').value, 10);
     boardHeight = parseInt(document.getElementById('boardHeight').value, 10);
 
@@ -35,6 +40,8 @@ document.getElementById('trainButton').onclick = async function() {
         const data = await response.json();
         if (data.status === 'trained') {
             document.getElementById('trainButton').style['background-color'] = 'green';
+            document.getElementById('aiAgentButton').disabled = false;
+            agentTrained = true;
         }
         return data;
     } catch (error) {
@@ -57,8 +64,10 @@ document.getElementById('resetButton').onclick = async function() {
             document.getElementById('resetButton').style.display = 'none';
             document.querySelector('.info').style.display = 'none';
             document.getElementById('trainButton').style['background-color'] = '#f39c12'
+            document.getElementById('aiAgentButton').disabled = true;
             gameStarted = false;
             firstFetch = false;
+            agentTrained = false;
         }
         return data;
     } catch (error) {
