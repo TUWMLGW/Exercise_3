@@ -19,7 +19,7 @@ class RLAgent:
         rl_agent_logger.info("RLAgent instance created.")
 
         self.episode_rewards = [] # List to store total reward per episode (will store final reward)
-        self.q_value_changes = [] # List to store magnitude of Q-value changes (if implemented)
+        self.q_value_changes = [] # List to store magnitude of Q-value changes
         self.policy_changes_count = [] # List to store how many policy entries changed per episode
         self.unique_states_visited = set() # To track unique states visited across episodes
         self.unique_state_action_pairs_visited = set() # To track unique (s,a) pairs visited

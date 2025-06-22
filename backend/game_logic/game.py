@@ -183,6 +183,7 @@ class GameState:
 
     def _reset_game_after_miss(self):
         """Resets game state if ball misses the paddle (as per PDF)."""
+        game_logger.info(f"Game Over! Ball hit bottom. Final Score: {self.score}")
         # Reset score
         self.score = 0
         # Place paddle back in center with speed 0
@@ -193,7 +194,6 @@ class GameState:
         self.ball_y_grid = config.GRID_HEIGHT // 2
         self.ball_dx_grid = random.choice(config.INITIAL_DX_CHOICES)
         self.ball_dy_grid = config.BALL_INITIAL_DY_GRID # Still moves vertically
-        game_logger.info(f"Game Over! Ball hit bottom. Final Score: {self.score}")
         # Make all bricks reappear
         for brick in self.bricks:
             brick['was_hit'] = False
