@@ -3,6 +3,9 @@ from backend import config
 from backend.reinforcement_learning.setup import discretize_state, choose_action_epsilon_greedy, count_state_action_pairs
 import random
 import numpy as np
+import matplotlib
+matplotlib.use('Agg') 
+import matplotlib.pyplot as plt
 import pickle
 import os
 import logging
@@ -23,6 +26,7 @@ class RLAgent:
         self.policy_changes_count = [] # List to store how many policy entries changed per episode
         self.unique_states_visited = set() # To track unique states visited across episodes
         self.unique_state_action_pairs_visited = set() # To track unique (s,a) pairs visited
+        self.state_action_visit_counts = {} # To track how many times each (s,a) pair was visited
 
         count_state_action_pairs()
 
@@ -51,8 +55,7 @@ class RLAgent:
             game_state.update()
         
         if episode_history: 
-            final_episode_reward = episode_history[-1][2] # Reward from the last (state, action, reward) tuple
-
+            final_episode_reward = sum([r for (_, _, r) in episode_history])
         self.episode_rewards.append(final_episode_reward)
 
         G = 0
@@ -64,6 +67,7 @@ class RLAgent:
             G = config.DISCOUNT_FACTOR * G + reward
             self.unique_states_visited.add(state)
             self.unique_state_action_pairs_visited.add((state, action))
+            self.state_action_visit_counts[(state, action)] = self.state_action_visit_counts.get((state, action), 0) + 1
             if (state, action) not in visited:
                 visited.add((state, action))
                 if (state, action) not in self.returns:
@@ -78,8 +82,14 @@ class RLAgent:
                     self.policy[state] = best_action
                     current_episode_policy_changes += 1 
         self.policy_changes_count.append(current_episode_policy_changes)
+        total_possible = count_state_action_pairs()
+        visited = len(self.unique_state_action_pairs_visited)
+        if visited > 0:
+            avg_visits = (sum(self.state_action_visit_counts.values()) / visited)
+        else:
+            avg_visits = 0
         rl_agent_logger.info(f"Episode finished. Final Game Reward: {final_episode_reward}, Policy Changes: {current_episode_policy_changes}")
-        rl_agent_logger.info(f"Total Unique States Visited: {len(self.unique_states_visited)}, Total Unique State-Action Pairs: {len(self.unique_state_action_pairs_visited)}")
+        rl_agent_logger.info(f"Total Unique States Visited: {len(self.unique_states_visited)}, Total Unique State-Action Pairs: {len(self.unique_state_action_pairs_visited)}/{total_possible}, AVG Visits per State: {avg_visits}")
         
 
     def choose_action(self, game_state):
@@ -110,6 +120,42 @@ class RLAgent:
         }
         rl_agent_logger.debug(f"Generated random start state: {state}")
         return state
+
+    def record_trajectory(self):
+        game_state = GameState()
+        trajectory = []
+        while not game_state.game_over:
+            ball_pos = (game_state.ball_x_grid, game_state.ball_y_grid)
+            paddle_pos = game_state.paddle_x_grid
+            trajectory.append((ball_pos, paddle_pos))
+            action = self.choose_action(game_state)
+            game_state.apply_action(action)
+            game_state.update()
+        return trajectory
+
+    def plot_trajectory(self, trajectory):
+        import matplotlib.pyplot as plt
+        ball_x = [pos[0][0] for pos in trajectory]
+        ball_y = [pos[0][1] for pos in trajectory]
+        paddle_x = [pos[1] for pos in trajectory]
+        steps = list(range(len(trajectory)))
+
+        plt.figure(figsize=(10, 5))
+        plt.subplot(2, 1, 1)
+        plt.plot(ball_x, ball_y, marker='o')
+        plt.title("Ball Trajectory (Grid Units)")
+        plt.xlabel("Ball X")
+        plt.ylabel("Ball Y")
+        plt.gca().invert_yaxis()
+
+        plt.subplot(2, 1, 2)
+        plt.plot(steps, paddle_x, marker='x')
+        plt.title("Paddle X Position Over Time")
+        plt.xlabel("Timestep")
+        plt.ylabel("Paddle X")
+        plt.tight_layout()
+        plt.savefig("trajectory_plot.png")
+        plt.close()
 
     def save(self, grid_dimension, directory="backend/reinforcement_learning/saved"):
         """

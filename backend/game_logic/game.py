@@ -12,6 +12,7 @@ class GameState:
         # Score and time
         self.score = 0
         self.time = 0
+        self.subset_counter = 0
 
         # Initialize ball position in center
         self.ball_x_grid = config.GRID_WIDTH // 2
@@ -50,7 +51,10 @@ class GameState:
 
     def get_reward(self):
         """Returns the reward for the current state, i.e. -1 for each timestep."""
-        return -self.time
+        if self.subset_counter == 0:
+            return -1
+        else:
+            return 0
 
     def from_state(self, state):
         """Sets the current GameState's attributes from a dict"""
@@ -64,11 +68,14 @@ class GameState:
         
     def update(self):
         """Updates the game state for one timestep, using GRID UNITS."""
-        if self.game_over:
+        if (self.game_over and self.subset_counter == 0):
             return
         speed = self.get_speed()
-        # Increase time
-        self.time += 1
+        # Increase subset counter
+        self.subset_counter += 1
+        if self.subset_counter >= 10:
+            self.time += 1
+            self.subset_counter = 0
 
         # Update Ball Position
         self.ball_x_grid += self.ball_dx_grid * speed

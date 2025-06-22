@@ -3,6 +3,7 @@ from flask import Flask, render_template, jsonify, request # type: ignore
 from flask_cors import CORS # type: ignore
 from tqdm import tqdm
 import logging
+import time
 
 from backend import config
 from backend.game_logic.game import GameState
@@ -52,6 +53,11 @@ def get_game_state():
                 return jsonify({
                     "error": f"Board width {board_width} must be a multiple of {config.BRICK_WIDTH_GRID}."
                 }), 400
+            if int(board_width) < config.PADDLE_WIDTH_GRID:
+                app_logger.info(f"Board width {board_width} is less than {config.PADDLE_WIDTH_GRID}.")
+                return jsonify({
+                    "error": f"Board width {board_width} must be at least {config.PADDLE_WIDTH_GRID}."
+                }), 400
             config.GRID_WIDTH = int(board_width)
             config.GRID_HEIGHT = int(board_height)
             current_game_state = GameState()
@@ -78,7 +84,6 @@ def get_game_state():
             action = data.get('action', 0)
             current_game_state.apply_action(action)
             app_logger.debug(f"Human Player chose action: {action}")
-
         current_game_state.update()
         
         return jsonify(current_game_state.get_state_for_display())
@@ -118,6 +123,8 @@ def train_agent():
             rl_agent.train_episode()
         rl_agent.save(grid_dimension)
         app_logger.info(f"Training completed and agent saved for {board_width}x{board_height} dimensions.")
+        trajectory = rl_agent.record_trajectory()
+        rl_agent.plot_trajectory(trajectory)
     return jsonify({'status': 'trained'})
 
 if __name__ == '__main__':
