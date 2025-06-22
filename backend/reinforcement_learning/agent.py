@@ -46,6 +46,9 @@ class RLAgent:
         episode_history.append((discrete_state, start_action, reward))
         game_state.update()
 
+        steps = 0
+        max_steps = 50000  # Limit to prevent infinite loops in case of errors
+
         while not game_state.game_over:
             discrete_state = discretize_state(game_state)
             action = choose_action_epsilon_greedy(self.q_table, discrete_state, self.possible_actions)
@@ -53,6 +56,10 @@ class RLAgent:
             reward = game_state.get_reward()
             episode_history.append((discrete_state, action, reward))
             game_state.update()
+            steps += 1
+            if steps >= max_steps:
+                rl_agent_logger.warning("Max steps reached, ending episode to prevent infinite loop.")
+                break
         
         if episode_history: 
             final_episode_reward = sum([r for (_, _, r) in episode_history])
