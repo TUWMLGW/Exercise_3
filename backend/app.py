@@ -56,23 +56,22 @@ def get_game_state():
             config.GRID_HEIGHT = int(board_height)
             current_game_state = GameState()
 
-        current_game_state.mode = mode
-        # AI Agent Mode
-        if mode == 'AI Agent':
             save_dir = os.path.join("backend/reinforcement_learning/saved", f"W{config.GRID_WIDTH}_H{config.GRID_HEIGHT}")
             filename = os.path.join(save_dir, "rl_agent.pkl")
             grid_dimension = (config.GRID_WIDTH, config.GRID_HEIGHT)
             if os.path.exists(filename):
                 rl_agent = RLAgent.load_agent(grid_dimension)
-                if not rl_agent.policy:
-                    return jsonify({"error": "Agent is not trained for this grid size. Please train first."}), 400
             else:
-                return jsonify({"error": "Agent is not trained for this grid size. Please train first."}), 400
+                rl_agent = RLAgent()
 
+        current_game_state.mode = mode
+        # AI Agent Mode
+        if mode == 'AI Agent':
+            if not rl_agent.policy:
+                return jsonify({"error": "AI Agent is not trained for this board."}), 400
             action = rl_agent.choose_action(current_game_state)
             current_game_state.apply_action(action)
             app_logger.debug(f"AI Agent chose action: {action}")
-
 
         # Human Player Mode
         else:
