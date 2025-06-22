@@ -121,42 +121,6 @@ class RLAgent:
         rl_agent_logger.debug(f"Generated random start state: {state}")
         return state
 
-    def record_trajectory(self):
-        game_state = GameState()
-        trajectory = []
-        while not game_state.game_over:
-            ball_pos = (game_state.ball_x_grid, game_state.ball_y_grid)
-            paddle_pos = game_state.paddle_x_grid
-            trajectory.append((ball_pos, paddle_pos))
-            action = self.choose_action(game_state)
-            game_state.apply_action(action)
-            game_state.update()
-        return trajectory
-
-    def plot_trajectory(self, trajectory):
-        import matplotlib.pyplot as plt
-        ball_x = [pos[0][0] for pos in trajectory]
-        ball_y = [pos[0][1] for pos in trajectory]
-        paddle_x = [pos[1] for pos in trajectory]
-        steps = list(range(len(trajectory)))
-
-        plt.figure(figsize=(10, 5))
-        plt.subplot(2, 1, 1)
-        plt.plot(ball_x, ball_y, marker='o')
-        plt.title("Ball Trajectory (Grid Units)")
-        plt.xlabel("Ball X")
-        plt.ylabel("Ball Y")
-        plt.gca().invert_yaxis()
-
-        plt.subplot(2, 1, 2)
-        plt.plot(steps, paddle_x, marker='x')
-        plt.title("Paddle X Position Over Time")
-        plt.xlabel("Timestep")
-        plt.ylabel("Paddle X")
-        plt.tight_layout()
-        plt.savefig("trajectory_plot.png")
-        plt.close()
-
     def save(self, grid_dimension, directory="backend/reinforcement_learning/saved"):
         """
         Saves the agent's learned parameters to a file.
@@ -174,6 +138,7 @@ class RLAgent:
             'q_table': self.q_table,
             'policy': self.policy,
             'returns': self.returns,
+            'episode_rewards': self.episode_rewards,
             'game_dimensions': {'width': grid_width, 'height': grid_height},
         }
         try:

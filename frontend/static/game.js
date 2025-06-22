@@ -193,8 +193,15 @@ function draw(gameState) {
         ctx.fillText("Time: " + (gameState.time || 0), canvas.width/2, canvas.height/2 + 60);
         ctx.textAlign = 'start';
         ctx.restore();
+        document.getElementById('downloadTrajectory').style.display = 'inline-block';
+    } else {
+        document.getElementById('downloadTrajectory').style.display = 'none';
     }
 }
+
+document.getElementById('downloadTrajectory').onclick = function() {
+    window.location.href = '/download_trajectory';
+};
 
 // Main animation loop
 async function gameLoop() {

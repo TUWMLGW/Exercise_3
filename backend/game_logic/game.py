@@ -14,6 +14,9 @@ class GameState:
         self.time = 0
         self.subset_counter = 0
 
+        # To store trajectory
+        self.trajectory = []
+
         # Initialize ball position in center
         self.ball_x_grid = config.GRID_WIDTH // 2
         self.ball_y_grid = config.GRID_HEIGHT // 2
@@ -181,6 +184,11 @@ class GameState:
             self.game_over = True
             game_logger.info(f"You Won! All bricks eliminated. Final Score: {self.score}. Final Reward: {-self.time}")
 
+        self.trajectory.append({
+            'ball': (self.ball_x_grid, self.ball_y_grid),
+            'paddle': self.paddle_x_grid,
+            'time': self.time
+        })
     
     def apply_action(self, action):
         """Applies the provided action to move the paddle."""
@@ -204,6 +212,10 @@ class GameState:
         # Make all bricks reappear
         for brick in self.bricks:
             brick['was_hit'] = False
+
+    def get_trajectory(self):
+        """Return the trajectory"""
+        return self.trajectory
 
     def get_state_for_display(self):
         """

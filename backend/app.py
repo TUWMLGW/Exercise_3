@@ -4,6 +4,11 @@ from flask_cors import CORS # type: ignore
 from tqdm import tqdm
 import logging
 import time
+import csv
+from flask import Response
+import io
+import matplotlib.pyplot as plt
+from flask import send_file
 
 from backend import config
 from backend.game_logic.game import GameState
@@ -126,6 +131,37 @@ def train_agent():
         trajectory = rl_agent.record_trajectory()
         rl_agent.plot_trajectory(trajectory)
     return jsonify({'status': 'trained'})
+
+@app.route('/download_trajectory', methods=['GET'])
+def download_trajectory():
+    """Downloads the a plot of the trajectory of the current game"""
+    trajectory = current_game_state.get_trajectory()
+    if not trajectory:
+        return jsonify({'error': 'No trajectory data available.'}), 400
+    
+    ball_x = [entry['ball'][0] for entry in trajectory]
+    ball_y = [entry['ball'][1] for entry in trajectory]
+    paddle_x = [entry['paddle'] for entry in trajectory]
+    steps = list(range(len(trajectory)))
+
+    fig, axs = plt.subplots(2, 1, figsize=(10, 5))
+    axs[0].plot(ball_x, ball_y, marker='o')
+    axs[0].set_title("Ball Trajectory (Grid Units)")
+    axs[0].set_xlabel("Ball X")
+    axs[0].set_ylabel("Ball Y")
+    axs[0].invert_yaxis()
+
+    axs[1].plot(steps, paddle_x, marker='x')
+    axs[1].set_title("Paddle X Position Over Time")
+    axs[1].set_xlabel("Timestep")
+    axs[1].set_ylabel("Paddle X")
+
+    plt.tight_layout() 
+    img_bytes = io.BytesIO()
+    plt.savefig(img_bytes, format='png')
+    plt.close(fig)
+    img_bytes.seek(0)
+    return send_file(img_bytes, mimetype='image/png', as_attachment=True, download_name='trajectory.png')
 
 if __name__ == '__main__':
     setup_logging()
