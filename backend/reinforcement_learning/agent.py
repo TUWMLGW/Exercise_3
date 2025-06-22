@@ -1,6 +1,6 @@
 from backend.game_logic.game import GameState
 from backend import config
-from backend.reinforcement_learning.setup import discretize_state, choose_action_epsilon_greedy
+from backend.reinforcement_learning.setup import discretize_state, choose_action_epsilon_greedy, count_state_action_pairs
 import random
 import numpy as np
 import pickle
@@ -23,6 +23,8 @@ class RLAgent:
         self.policy_changes_count = [] # List to store how many policy entries changed per episode
         self.unique_states_visited = set() # To track unique states visited across episodes
         self.unique_state_action_pairs_visited = set() # To track unique (s,a) pairs visited
+
+        count_state_action_pairs()
 
     def train_episode(self):
         """Runs a single episode of the game for training."""
@@ -67,7 +69,7 @@ class RLAgent:
                 if (state, action) not in self.returns:
                     self.returns[(state, action)] = []
                 self.returns[(state, action)].append(G)
-                self.q_table[(state, action)] = int(np.mean(self.returns[(state, action)]))
+                self.q_table[(state, action)] = float(np.mean(self.returns[(state, action)]))
 
                 q_values = [self.q_table.get((state, action), 0.0) for action in self.possible_actions]
                 best_action = self.possible_actions[np.argmax(q_values)]
@@ -83,20 +85,18 @@ class RLAgent:
     def choose_action(self, game_state):
         """Picks an optimal action based on the provided game state (breaks ties randomly)."""
         discrete_state = discretize_state(game_state)
-        rl_agent_logger.info(f"Choosing best action based on policy: {self.policy}")
         if discrete_state in self.policy:
             return self.policy[discrete_state]
 
-        rl_agent_logger.warning(f"Inference: State {discrete_state} not found in policy. Falling back to Q-table/random.")
         q_values = {action: self.q_table.get((discrete_state, action), 0.0) for action in self.possible_actions}
-        if not q_values:
-            rl_agent_logger.warning("No optimal values found, gonna play randomly")
+        if all(q == 0.0 for q in q_values.values()):
+            # rl_agent_logger.debug("No optimal values found, gonna play randomly")
             return random.choice(self.possible_actions)
 
         max_q = max(q_values.values())
         best_actions = [action for action, q in q_values.items() if q == max_q]
         action = random.choice(best_actions)
-        rl_agent_logger.info(f"Inference: State={discrete_state}, Action={action})")
+        # rl_agent_logger.debug(f"Inference: State={discrete_state}, Action={action})")
         return action
 
     def random_start_state(self):
